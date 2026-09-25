@@ -1,0 +1,26 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+
+# Node / Wrangler
+node_modules/
+.wrangler/
+worker/.wrangler/
+worker/node_modules/
+
+# Secrets / local config
+.dev.vars
+*.token
+.env
+
+# Logs & output
+*.log
+*_results.csv
+
+# OS
+.DS_Store
+Thumbs.db

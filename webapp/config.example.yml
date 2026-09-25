@@ -1,0 +1,8 @@
+# Copy to %USERPROFILE%\.cloudflared\config.yml and edit the placeholders.
+tunnel: nulltrace
+credentials-file: C:\Users\fahad\.cloudflared\<TUNNEL-UUID>.json
+
+ingress:
+  - hostname: nt.<YOURDOMAIN>
+    service: http://localhost:8080
+  - service: http_status:404

@@ -1,0 +1,49 @@
+from nulltrace.core import *
+from nulltrace.localuseragent import *
+
+
+async def komoot(email, client, out):
+    name = "komoot"
+    domain = "komoot.com"
+    method= "register"
+    frequent_rate_limit=True
+
+    headers = {
+        'User-Agent': random.choice(ua["browsers"]["firefox"]),
+        'Accept': '*/*',
+        'Accept-Language': 'fr,fr-FR;q=0.8,en-US;q=0.5,en;q=0.3',
+        'Content-Type': 'application/json',
+        'Origin': 'https://www.komoot.com',
+        'Connection': 'keep-alive',
+        'Referer': 'https://www.komoot.com/signin',
+    }
+
+    data = '{"email":"'+email+'"}'
+
+    try:
+        response = await client.post('https://www.komoot.com/v1/signin',headers=headers,data=data)
+        # account.komoot.com now 301-redirects to www.komoot.com
+        kind = response.json()['type']
+        if kind == 'login':
+            out.append({"name": name,"domain":domain,"method":method,"frequent_rate_limit":frequent_rate_limit,
+                        "rateLimit": False,
+                        "exists": True,
+                        "emailrecovery": None,
+                        "phoneNumber": None,
+                        "others": None})
+        elif kind == 'register':
+            out.append({"name": name,"domain":domain,"method":method,"frequent_rate_limit":frequent_rate_limit,
+                    "rateLimit": False,
+                    "exists": False,
+                    "emailrecovery": None,
+                    "phoneNumber": None,
+                    "others": None})
+        else:
+            raise ValueError(kind)
+    except Exception:
+        out.append({"name": name,"domain":domain,"method":method,"frequent_rate_limit":frequent_rate_limit,
+                    "rateLimit": True,
+                    "exists": False,
+                    "emailrecovery": None,
+                    "phoneNumber": None,
+                    "others": None})

@@ -1,0 +1,12 @@
+# NullTrace runtime dependencies
+# Install with:  .venv/Scripts/python -m pip install -r requirements.txt
+httpx==0.28.1
+trio==0.34.0
+beautifulsoup4==4.15.0
+bs4==0.0.2
+termcolor==3.3.0
+colorama==0.4.6
+tqdm==4.70.1
+requests==2.34.2
+fastapi==0.141.1
+uvicorn[standard]==0.54.0

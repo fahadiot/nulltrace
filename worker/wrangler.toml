@@ -1,0 +1,8 @@
+name = "nulltrace"
+main = "src/worker.js"
+compatibility_date = "2024-11-01"
+workers_dev = true
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
