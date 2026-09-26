@@ -9,6 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/css/intlTelInput.min.css" />
 <style>
   :root{
     --bg:#0b0f17;
@@ -183,6 +184,43 @@
     .phead .lbl .mut{display:none}
   }
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  /* tabs */
+  .tabs{display:inline-flex;gap:4px;padding:5px;background:var(--panel-2);border:1px solid var(--line);border-radius:13px;margin-bottom:18px}
+  .tab{border:0;background:transparent;color:var(--muted);font-family:var(--ui);font-weight:600;font-size:13.5px;padding:9px 20px;border-radius:9px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:.15s}
+  .tab:hover{color:var(--fg)}
+  .tab.active{background:var(--panel);color:var(--accent-2);box-shadow:0 1px 2px rgba(0,0,0,.25)}
+  .pane[hidden]{display:none}
+
+  /* phone input */
+  .phone-row{display:flex;gap:10px;align-items:stretch;width:100%}
+  .iti{flex:1;min-width:0}
+  #phone{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);color:var(--fg);font-family:var(--mono);font-size:clamp(14px,2vw,16px);padding-top:15px;padding-bottom:15px;padding-right:14px;outline:0;transition:.18s}
+  #phone:focus{border-color:rgba(16,185,129,.55);box-shadow:0 0 0 3px rgba(16,185,129,.12)}
+  .iti__selected-flag{border-radius:var(--radius) 0 0 var(--radius)}
+  .iti--separate-dial-code .iti__selected-flag{background:var(--panel-2)}
+  .iti--separate-dial-code .iti__selected-dial-code{color:var(--fg)}
+  .iti__country-list{background:var(--panel);border:1px solid var(--line);color:var(--fg);border-radius:12px;box-shadow:var(--shadow);scrollbar-width:thin}
+  .iti__country-list::-webkit-scrollbar{width:8px}
+  .iti__country-list::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+  .iti__country.iti__highlight{background:var(--panel-2)}
+  .iti__dial-code{color:var(--muted)}
+  .iti__divider{border-color:var(--line)}
+  .iti__search-input{background:var(--panel-2);color:var(--fg);border:0}
+
+  /* phone result */
+  .phone-result{margin-top:16px;display:none}
+  .phone-result.on{display:block;animation:in .25s}
+  .pcard{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 8px;box-shadow:var(--shadow)}
+  .pcard .valid{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;margin-bottom:16px}
+  .pcard .valid .dot{width:10px;height:10px;border-radius:50%}
+  .pcard.ok .valid{color:var(--accent-2)} .pcard.ok .valid .dot{background:var(--accent);box-shadow:0 0 10px var(--accent)}
+  .pcard.bad .valid{color:var(--red)} .pcard.bad .valid .dot{background:var(--red)}
+  .prows{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;text-align:left}
+  .pf{display:flex;flex-direction:column;gap:3px;margin-bottom:10px}
+  .pf .k{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.6px}
+  .pf .v{font-size:14px;color:var(--fg);font-family:var(--mono);word-break:break-all}
+  @media (max-width:560px){.prows{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -194,7 +232,7 @@
       </div>
       <div>
         <div class="name">Null<b>Trace</b></div>
-        <div class="tag">email footprint scanner</div>
+        <div class="tag">email &amp; phone footprint</div>
       </div>
     </div>
     <nav class="nav">
@@ -208,20 +246,36 @@
 
   <main>
     <section class="hero">
-      <span class="eyebrow"><span class="d"></span> OSINT · email recon</span>
-      <h1 class="title">Find where an email is <span class="g">registered</span></h1>
-      <p class="lede">Enter an address you own. NullTrace checks it against dozens of sites' public sign-up and login lookups — quietly, without ever notifying the address owner.</p>
+      <span class="eyebrow"><span class="d"></span> OSINT · email &amp; phone recon</span>
+      <h1 class="title">Trace an email or <span class="g">number</span></h1>
+      <p class="lede">Check an email address across dozens of sites, or validate and profile a phone number by country. Only for addresses and numbers you own or are authorized to check.</p>
 
-      <form class="searchbar" id="form" autocomplete="off">
-        <span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
-        <input id="email" type="email" inputmode="email" spellcheck="false" placeholder="name@example.com" aria-label="Email address" />
-        <button class="btn" id="go" type="submit" disabled>Trace</button>
-      </form>
-      <div class="consent">
-        <input type="checkbox" id="consent" />
-        <label for="consent">I own this address or am authorized to check it, and will use NullTrace lawfully for educational purposes.</label>
+      <div class="tabs" role="tablist">
+        <button class="tab active" id="tab-email" data-pane="email" type="button" role="tab">✉️ Email</button>
+        <button class="tab" id="tab-phone" data-pane="phone" type="button" role="tab">📱 Phone</button>
       </div>
-      <div class="err" id="err"></div>
+
+      <div class="pane" id="pane-email">
+        <form class="searchbar" id="form" autocomplete="off">
+          <span class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+          <input id="email" type="email" inputmode="email" spellcheck="false" placeholder="name@example.com" aria-label="Email address" />
+          <button class="btn" id="go" type="submit" disabled>Trace</button>
+        </form>
+        <div class="consent">
+          <input type="checkbox" id="consent" />
+          <label for="consent">I own this address or am authorized to check it, and will use NullTrace lawfully for educational purposes.</label>
+        </div>
+        <div class="err" id="err"></div>
+      </div>
+
+      <div class="pane" id="pane-phone" hidden>
+        <form class="phone-row" id="phoneForm" autocomplete="off">
+          <input id="phone" type="tel" placeholder="Enter phone number" aria-label="Phone number" />
+          <button class="btn" id="phoneGo" type="submit">Analyze</button>
+        </form>
+        <div class="err" id="perr"></div>
+        <div class="phone-result" id="phoneResult"></div>
+      </div>
     </section>
 
     <section class="panel" id="console" aria-live="polite">
@@ -252,11 +306,13 @@
         or attempts logins. Use it only on addresses you own or are explicitly authorized to test;
         you are responsible for complying with applicable laws and each site's terms of service.
       </p>
+      <p class="disc">Phone lookup validates and profiles a number offline (validity, country, line type, formatting). It does not check where a number is registered and never messages the number.</p>
       <p>built by <a id="ghLink2" href="https://github.com/fahadiot" target="_blank" rel="noopener">@fahadiot</a> · educational &amp; authorized use only</p>
     </footer>
   </main>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/js/intlTelInput.min.js"></script>
 <script>
 /* ------- CONFIG: your GitHub username ------- */
 const GITHUB_USER = "fahadiot";
@@ -356,6 +412,59 @@ function render(elapsed){
   }
   results.classList.add("on");
 }
+
+/* ------- tab switching ------- */
+const tabs=document.querySelectorAll(".tab");
+tabs.forEach(t=>t.addEventListener("click",()=>{
+  tabs.forEach(x=>x.classList.remove("active"));
+  t.classList.add("active");
+  $("#pane-email").hidden = t.dataset.pane!=="email";
+  $("#pane-phone").hidden = t.dataset.pane!=="phone";
+}));
+
+/* ------- phone metadata (offline, via intl-tel-input + libphonenumber) ------- */
+const phoneInput=$("#phone"), phoneForm=$("#phoneForm"), perr=$("#perr"), phoneResult=$("#phoneResult");
+const iti = window.intlTelInput(phoneInput, {
+  initialCountry: "pk",
+  separateDialCode: true,
+  preferredCountries: ["pk","us","gb","in","ae","sa"],
+  utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/js/utils.js"
+});
+const PTYPE={0:"Fixed line",1:"Mobile",2:"Fixed line or mobile",3:"Toll free",4:"Premium rate",5:"Shared cost",6:"VoIP",7:"Personal number",8:"Pager",9:"UAN",10:"Voicemail","-1":"Unknown"};
+function flagEmoji(iso2){ try{ return iso2 ? String.fromCodePoint(...[...iso2.toUpperCase()].map(c=>127397+c.charCodeAt(0))) : ""; }catch(_){ return ""; } }
+function pf(k,v){ return `<div class="pf"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(v)}</span></div>`; }
+
+phoneForm.addEventListener("submit", e=>{
+  e.preventDefault();
+  perr.textContent="";
+  if(!phoneInput.value.trim()){ perr.textContent="Enter a phone number."; phoneResult.classList.remove("on"); return; }
+  const cd = iti.getSelectedCountryData();
+  let valid=false, e164=phoneInput.value.trim(), natl="—", intl="—", typeLabel="Unknown";
+  try{
+    valid = iti.isValidNumber();
+    e164  = iti.getNumber() || e164;
+    if(window.intlTelInputUtils){
+      typeLabel = PTYPE[iti.getNumberType()] || "Unknown";
+      natl = iti.getNumber(intlTelInputUtils.numberFormat.NATIONAL) || "—";
+      intl = iti.getNumber(intlTelInputUtils.numberFormat.INTERNATIONAL) || "—";
+    }
+  }catch(_){}
+  const flag = flagEmoji(cd.iso2);
+  phoneResult.innerHTML =
+    `<div class="pcard ${valid?'ok':'bad'}">
+      <div class="valid"><span class="dot"></span>${valid?'Valid number':'Not a valid number'}</div>
+      <div class="prows">
+        ${pf("Country", (flag?flag+" ":"") + (cd.name||"Unknown"))}
+        ${pf("Dial code", cd.dialCode?("+"+cd.dialCode):"—")}
+        ${pf("Line type", typeLabel)}
+        ${pf("Region (ISO)", cd.iso2?cd.iso2.toUpperCase():"—")}
+        ${pf("E.164", e164||"—")}
+        ${pf("National", natl)}
+        ${pf("International", intl)}
+      </div>
+    </div>`;
+  phoneResult.classList.add("on");
+});
 </script>
 </body>
 </html>
