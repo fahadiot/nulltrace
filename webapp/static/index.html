@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/css/intlTelInput.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/css/intlTelInput.min.css" />
 <style>
   :root{
     --bg:#0b0f17;
@@ -212,6 +212,11 @@
   .iti__dial-code{color:var(--muted)}
   .iti__divider{border-color:var(--line)}
   .iti__search-input{background:var(--panel-2);color:var(--fg);border:0}
+  .iti{text-align:left}
+  .iti__country-list{position:absolute;z-index:1000;top:100%;left:0;margin-top:6px;max-height:260px;overflow-y:auto;width:max-content;max-width:min(360px,88vw);text-align:left;padding:4px 0}
+  .iti__country{padding:8px 12px;text-align:left;display:flex;align-items:center;gap:8px}
+  .iti__country .iti__country-name{order:1}
+  .iti__country .iti__dial-code{order:2;margin-left:auto}
 
   /* phone result */
   .phone-result{margin-top:16px;display:none}
@@ -318,7 +323,7 @@
   </main>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/js/intlTelInput.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/intlTelInput.min.js"></script>
 <script>
 /* ------- CONFIG: your GitHub username ------- */
 const GITHUB_USER = "fahadiot";
@@ -434,7 +439,7 @@ const iti = window.intlTelInput(phoneInput, {
   initialCountry: "pk",
   separateDialCode: true,
   preferredCountries: ["pk","us","gb","in","ae","sa"],
-  utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/18.2.1/js/utils.js"
+  utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js"
 });
 const PTYPE={0:"Fixed line",1:"Mobile",2:"Fixed line or mobile",3:"Toll free",4:"Premium rate",5:"Shared cost",6:"VoIP",7:"Personal number",8:"Pager",9:"UAN",10:"Voicemail","-1":"Unknown"};
 function flagEmoji(iso2){ try{ return iso2 ? String.fromCodePoint(...[...iso2.toUpperCase()].map(c=>127397+c.charCodeAt(0))) : ""; }catch(_){ return ""; } }
