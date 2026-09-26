@@ -197,6 +197,11 @@
   .iti{flex:1;min-width:0}
   #phone{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);color:var(--fg);font-family:var(--mono);font-size:clamp(14px,2vw,16px);padding-top:15px;padding-bottom:15px;padding-right:14px;outline:0;transition:.18s}
   #phone:focus{border-color:rgba(16,185,129,.55);box-shadow:0 0 0 3px rgba(16,185,129,.12)}
+  #phone.valid{border-color:rgba(16,185,129,.55)}
+  #phone.invalid{border-color:var(--red);box-shadow:0 0 0 3px rgba(248,113,113,.12)}
+  .plabel{display:block;text-align:left;font-size:12px;color:var(--muted);margin-bottom:8px;font-weight:600;letter-spacing:.2px}
+  .iti__arrow{border-top-color:var(--muted)}
+  #perr{text-align:left}
   .iti__selected-flag{border-radius:var(--radius) 0 0 var(--radius)}
   .iti--separate-dial-code .iti__selected-flag{background:var(--panel-2)}
   .iti--separate-dial-code .iti__selected-dial-code{color:var(--fg)}
@@ -269,9 +274,10 @@
       </div>
 
       <div class="pane" id="pane-phone" hidden>
+        <label class="plabel" for="phone">Phone number</label>
         <form class="phone-row" id="phoneForm" autocomplete="off">
           <input id="phone" type="tel" placeholder="Enter phone number" aria-label="Phone number" />
-          <button class="btn" id="phoneGo" type="submit">Analyze</button>
+          <button class="btn" id="phoneGo" type="submit">Details</button>
         </form>
         <div class="err" id="perr"></div>
         <div class="phone-result" id="phoneResult"></div>
@@ -434,37 +440,52 @@ const PTYPE={0:"Fixed line",1:"Mobile",2:"Fixed line or mobile",3:"Toll free",4:
 function flagEmoji(iso2){ try{ return iso2 ? String.fromCodePoint(...[...iso2.toUpperCase()].map(c=>127397+c.charCodeAt(0))) : ""; }catch(_){ return ""; } }
 function pf(k,v){ return `<div class="pf"><span class="k">${escapeHtml(k)}</span><span class="v">${escapeHtml(v)}</span></div>`; }
 
-phoneForm.addEventListener("submit", e=>{
-  e.preventDefault();
+function renderPhone(){
   perr.textContent="";
-  if(!phoneInput.value.trim()){ perr.textContent="Enter a phone number."; phoneResult.classList.remove("on"); return; }
+  phoneInput.classList.remove("valid","invalid");
+  const val = phoneInput.value.trim();
+  if(!val){ phoneResult.classList.remove("on"); return; }
+  if(!window.intlTelInputUtils){ return; } // validation library still loading
+
+  let valid=false;
+  try{ valid = iti.isValidNumber(); }catch(_){}
+
+  if(!valid){
+    phoneInput.classList.add("invalid");
+    perr.textContent = "Phone number is not valid";
+    phoneResult.classList.remove("on");
+    return;
+  }
+
+  phoneInput.classList.add("valid");
   const cd = iti.getSelectedCountryData();
-  let valid=false, e164=phoneInput.value.trim(), natl="—", intl="—", typeLabel="Unknown";
+  let e164=val, natl="unknown", intl="unknown", typeLabel="Unknown";
   try{
-    valid = iti.isValidNumber();
-    e164  = iti.getNumber() || e164;
-    if(window.intlTelInputUtils){
-      typeLabel = PTYPE[iti.getNumberType()] || "Unknown";
-      natl = iti.getNumber(intlTelInputUtils.numberFormat.NATIONAL) || "—";
-      intl = iti.getNumber(intlTelInputUtils.numberFormat.INTERNATIONAL) || "—";
-    }
+    e164 = iti.getNumber() || val;
+    typeLabel = PTYPE[iti.getNumberType()] || "Unknown";
+    natl = iti.getNumber(intlTelInputUtils.numberFormat.NATIONAL) || "unknown";
+    intl = iti.getNumber(intlTelInputUtils.numberFormat.INTERNATIONAL) || "unknown";
   }catch(_){}
   const flag = flagEmoji(cd.iso2);
   phoneResult.innerHTML =
-    `<div class="pcard ${valid?'ok':'bad'}">
-      <div class="valid"><span class="dot"></span>${valid?'Valid number':'Not a valid number'}</div>
+    `<div class="pcard ok">
+      <div class="valid"><span class="dot"></span>Valid number</div>
       <div class="prows">
         ${pf("Country", (flag?flag+" ":"") + (cd.name||"Unknown"))}
-        ${pf("Dial code", cd.dialCode?("+"+cd.dialCode):"—")}
+        ${pf("Dial code", cd.dialCode?("+"+cd.dialCode):"unknown")}
         ${pf("Line type", typeLabel)}
-        ${pf("Region (ISO)", cd.iso2?cd.iso2.toUpperCase():"—")}
-        ${pf("E.164", e164||"—")}
+        ${pf("Region (ISO)", cd.iso2?cd.iso2.toUpperCase():"unknown")}
+        ${pf("E.164", e164)}
         ${pf("National", natl)}
         ${pf("International", intl)}
       </div>
     </div>`;
   phoneResult.classList.add("on");
-});
+}
+phoneInput.addEventListener("input", renderPhone);
+phoneInput.addEventListener("blur", renderPhone);
+phoneInput.addEventListener("countrychange", renderPhone);
+phoneForm.addEventListener("submit", e=>{ e.preventDefault(); renderPhone(); });
 </script>
 </body>
 </html>
